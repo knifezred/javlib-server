@@ -5,8 +5,7 @@ Javlib 的服务端，可部署在 NAS 中供移动端和桌面端使用
 ### 1Panel 部署
 
 1. 打开 1Panel->网站->运行环境->Node.js
-2. 选择创建运行环境
-3. 填写配置如下
+2. 创建运行环境, 填写配置如下
 
 ```
 名称: javlib-server(随便填)
@@ -23,7 +22,7 @@ Javlib 的服务端，可部署在 NAS 中供移动端和桌面端使用
 
 ```
 
-4. 启动之后选择 1Panel-> 容器 -> 编排,找到刚刚创建的编排 javlib-server，点击编辑，挂载自己的影视文件夹。
+3. 启动之后选择 1Panel-> 容器 -> 编排,找到刚刚创建的编排 javlib-server，点击编辑，挂载自己的影视文件夹。
 
 ```
     - /volume1/media/媒体库:/app/public/media/vol1
@@ -57,7 +56,7 @@ services:
         working_dir: /app
 ```
 
-5. 重启 Node.js 运行环境，查看日志
+4. 重启 Node.js 运行环境，查看日志
 
 当日志出现`Javlib Server started on port : 3000`时则部署成功
 
