@@ -1,68 +1,70 @@
+import type { Express } from 'express'
 import { Between, Equal, In, Like } from 'typeorm'
 import { AppDataSource } from '../data-source'
 import { Actress } from '../entity/actress'
 
-export function initActressApi(server) {
+export function initActressApi(server: Express) {
   const repository = AppDataSource.getRepository(Actress)
 
   server.post('/api/actress/list', async (req, res) => {
     try {
+      console.log(req.url)
       const queryBuilder = repository.createQueryBuilder('actress')
-      if (req.body.tags != null && req.body.tags != undefined) {
+      if (req.body.tags !== null && req.body.tags !== undefined) {
         const whereParams: any = {}
         let whereStr = ''
         req.body.tags.forEach((tag: string, index: number) => {
-          whereStr += 'actress.tags LIKE :tag' + index + ' AND '
-          whereParams['tag' + index] = '%|' + tag + '|%'
+          whereStr += `actress.tags LIKE :tag${index} AND `
+          whereParams[`tag${index}`] = `%|${tag}|%`
         })
         whereStr = whereStr.substring(0, whereStr.length - 4)
         queryBuilder.andWhere(whereStr, whereParams)
       }
-      if (req.body.name != undefined && req.body.name != '') {
+      if (req.body.name !== undefined && req.body.name !== '') {
         if (req.body.name.includes('|')) {
           queryBuilder.orWhere({
-            name: In(req.body.name.split('|').filter((x) => x.length > 0))
+            name: In(req.body.name.split('|').filter((x: string) => x.length > 0))
           })
         } else {
           queryBuilder
             .orWhere({
-              name: Like('%' + req.body.name + '%')
+              name: Like(`%${req.body.name}%`)
             })
             .orWhere({
-              alias: Like('%' + req.body.name + '%')
+              alias: Like(`%${req.body.name}%`)
             })
         }
       }
-      if (req.body.face != undefined && req.body.face != null) {
+      if (req.body.face !== undefined && req.body.face !== null) {
         queryBuilder.andWhere({
           face: Between(req.body.face[0], req.body.face[1])
         })
       }
-      if (req.body.body != undefined && req.body.body != null) {
+      if (req.body.body !== undefined && req.body.body !== null) {
         queryBuilder.andWhere({
           body: Between(req.body.body[0], req.body.body[1])
         })
       }
 
-      if (req.body.favorite != undefined) {
+      if (req.body.favorite !== undefined) {
         queryBuilder.andWhere({
           favorite: Equal(req.body.favorite)
         })
       }
-      if (req.body.cup != undefined && req.body.cup != null && req.body.cup != '') {
+      if (req.body.cup !== undefined && req.body.cup !== null && req.body.cup !== '') {
         queryBuilder.andWhere({
           cup: Equal(req.body.cup)
         })
       }
-      if (req.body.bodySize != undefined && req.body.bodySize != null && req.body.bodySize != '') {
+      if (req.body.bodySize !== undefined && req.body.bodySize !== null && req.body.bodySize !== '') {
         queryBuilder.andWhere({
           bodySize: Equal(req.body.bodySize)
         })
       }
       const result = await queryBuilder
         .orderBy(
-          req.body.sortRule == 'RAND' ? 'RANDOM()' : 'actress.' + req.body.sort,
-          req.body.sortRule == 'RAND' ? 'ASC' : req.body.sortRule
+          req.body.sortRule === 'RAND' ? 'RANDOM()' : `actress.${req.body.sort}`,
+          req.body.sortRule === 'RAND' ? 'ASC' : req.body.sortRule
         )
         .take(req.body.pageSize)
         .skip((req.body.page - 1) * req.body.pageSize)
@@ -78,10 +80,11 @@ export function initActressApi(server) {
     }
   })
 
-  server.get('/api/actress_total_count', async (_req, res) => {
+  server.get('/api/actress_total_count', async (req, res) => {
     try {
+      console.log(req.url)
       const result = await repository.countBy({
-        isDelete: false || undefined
+        isDelete: false
       })
       res.status(200).json(result)
     } catch (error) {
@@ -89,10 +92,11 @@ export function initActressApi(server) {
     }
   })
 
-  server.get('/api/actress_favorites_count', async (_req, res) => {
+  server.get('/api/actress_favorites_count', async (req, res) => {
     try {
+      console.log(req.url)
       const result = await repository.countBy({
-        isDelete: false || undefined,
+        isDelete: false,
         favorite: true
       })
       res.status(200).json(result)
@@ -103,6 +107,7 @@ export function initActressApi(server) {
 
   server.get('/api/actress/:name', async (req, res) => {
     try {
+      console.log(req.url)
       const result = await repository.findOneBy({ name: req.params.name })
       res.status(200).json(result)
     } catch (error) {
@@ -112,6 +117,7 @@ export function initActressApi(server) {
 
   server.post('/api/actress/', async (req, res) => {
     try {
+      console.log(req.url)
       req.body.createdTime = Date.now()
       req.body.updatedTime = Date.now()
       const result = await repository.save(req.body)
@@ -123,6 +129,7 @@ export function initActressApi(server) {
 
   server.post('/api/actress/:name', async (req, res) => {
     try {
+      console.log(req.url)
       req.body.updatedTime = Date.now()
       const result = await repository.update({ name: req.params.name }, req.body)
       res.status(200).json(result)
@@ -131,8 +138,9 @@ export function initActressApi(server) {
     }
   })
 
-  server.delete('/api/actress', async (req, res) => {
+  server.delete('/api/actress/', async (req, res) => {
     try {
+      console.log(req.url)
       const result = await repository.remove(req.body)
       res.status(200).json(result)
     } catch (error) {

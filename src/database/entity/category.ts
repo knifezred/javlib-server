@@ -21,5 +21,5 @@ export class Category {
   updatedTime?: number
 
   @Column({ type: 'boolean', nullable: true })
-  favorite?: boolean //收藏
+  favorite?: boolean // 收藏
 }

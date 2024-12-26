@@ -18,16 +18,16 @@ server.use(express.json())
 server.use(express.urlencoded({ extended: true }))
 // 跨域设置
 const corsOptions = {
-    origin: '*', // 或者使用通配符 '*' 来允许所有来源
-    methods: ['GET', 'POST', 'DELETE', 'PUT'], // 允许的HTTP方法
-    preflightContinue: false,
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'] // 允许的HTTP头
+  origin: '*', // 或者使用通配符 '*' 来允许所有来源
+  methods: ['GET', 'POST', 'DELETE', 'PUT'], // 允许的HTTP方法
+  preflightContinue: false,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'] // 允许的HTTP头
 }
 server.use('/api', cors(corsOptions))
 // 绑定接口
 setupServerApi(server)
 // 启动服务器
 server.listen(serverPort, () => {
-    console.log('Javlib Server started on port : ' + serverPort)
+  console.log('Javlib Server started on port : ' + serverPort)
 })
 createServer(server)

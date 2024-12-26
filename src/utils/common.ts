@@ -1,7 +1,7 @@
 import { existsSync, promises } from 'fs'
 import { dirname, join } from 'path'
 // 格式化时间戳
-export function formatTimestamp(timestamp) {
+export function formatTimestamp(timestamp: number) {
   // 创建一个Date对象
   const date = new Date(timestamp)
 
@@ -29,14 +29,14 @@ export function formatTimestamp(timestamp) {
 
 // 获取文件列表
 export async function listAllDirFiles(directories: string[]) {
-  var files = [] as string[]
+  const files = [] as string[]
   for (const dir of directories) {
     console.log(dir)
     const items = await promises.readdir(dir, {
       encoding: 'utf-8',
       recursive: true
     })
-    console.log(dir + ' find files ' + files.length)
+    console.log(`${dir} find files ${files.length}`)
     for (const item of items) {
       const fullPath = join(dir, item)
       if (!(await promises.stat(fullPath)).isDirectory()) {
@@ -68,27 +68,28 @@ export async function saveFile(file: File) {
 }
 
 export async function fsCopyFile(source: string, destination: string) {
-  console.log('copy file to ' + destination)
+  console.log(`copy file to ${destination}`)
   if (!existsSync(destination)) {
     if (!existsSync(getFileFolder(destination))) {
+      console.log(`mkdir ${destination}`)
       promises.mkdir(getFileFolder(destination), { recursive: true })
     }
     await promises.copyFile(source, destination)
   }
 }
 
-export async function fileArrayToBuffer(file) {
+export async function fileArrayToBuffer(file: File) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => resolve(reader.result)
-    reader.onerror = (error) => reject(error)
+    reader.onerror = error => reject(error)
     reader.readAsArrayBuffer(file)
   })
 }
 
 export function getFileExtension(filename: string) {
   const parts = filename.split('.')
-  return parts.length > 1 ? '.' + parts.pop() : filename
+  return parts.length > 1 ? `.${parts.pop()}` : filename
 }
 
 export async function getFileStats(filePath: string) {

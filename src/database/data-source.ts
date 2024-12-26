@@ -1,4 +1,4 @@
-import { join } from 'path'
+import { join } from 'node:path'
 import { DataSource } from 'typeorm'
 import { getAppPath } from '../utils/common'
 import { Actress } from './entity/actress'

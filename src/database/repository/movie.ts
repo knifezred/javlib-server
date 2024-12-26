@@ -1,87 +1,86 @@
+import type { Express } from 'express'
 import { Between, Equal, In, Like } from 'typeorm'
 import { AppDataSource } from '../data-source'
 import { Movie } from '../entity/movie'
 
-export function initMovieApi(server) {
+export function initMovieApi(server: Express) {
   const repository = AppDataSource.getRepository(Movie)
 
+  // eslint-disable-next-line complexity
   server.post('/api/movie/list', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
-      if (req.body.years != null && req.body.years != undefined) {
-        const years = []
-        const singleYear = req.body.years.filter((x) => x.indexOf('-') == -1)
+      if (req.body.years !== null && req.body.years !== undefined) {
+        const whereYears: string[] = []
+        const singleYear = req.body.years.filter((x: string) => !x.includes('-'))
         if (singleYear.length > 0) {
-          years.push({
+          whereYears.push({
             year: In(singleYear)
           } as never)
         }
         req.body.years
-          .filter((x) => x.indexOf('-') > -1)
+          .filter((x: string) => x.includes('-'))
           .forEach((option: string) => {
-            years.push({
+            whereYears.push({
               year: Between(option.split('-')[1], option.split('-')[0])
             } as never)
           })
-        if (years.length > 0) {
-          movies.andWhere(years)
+        if (whereYears.length > 0) {
+          movies.andWhere(whereYears)
         }
       }
       // and查询
-      if (req.body.tags != null && req.body.tags != undefined) {
+      if (req.body.tags !== null && req.body.tags !== undefined) {
         const whereParams: any = {}
         let whereStr = ''
         req.body.tags.forEach((tag: string, index: number) => {
-          whereStr += 'movie.tags LIKE :tag' + index + ' AND '
-          whereParams['tag' + index] = '%|' + tag + '|%'
+          whereStr += `movie.tags LIKE :tag${index} AND `
+          whereParams[`tag${index}`] = `%|${tag}|%`
         })
         whereStr = whereStr.substring(0, whereStr.length - 4)
         movies.andWhere(whereStr, whereParams)
       }
-      if (req.body.keyword != undefined && req.body.keyword != '') {
+      if (req.body.keyword !== undefined && req.body.keyword !== '') {
         movies.andWhere({
-          title: Like('%' + req.body.keyword + '%')
+          title: Like(`%${req.body.keyword}%`)
         })
         movies.orWhere({
-          originTitle: Like('%' + req.body.keyword + '%')
+          originTitle: Like(`%${req.body.keyword}%`)
         })
       }
-      if (req.body.actress != undefined && req.body.actress != '') {
+      if (req.body.actress !== undefined && req.body.actress !== '') {
         movies.andWhere({
-          actress: Like('%|' + req.body.actress + '|%')
+          actress: Like(`%|${req.body.actress}|%`)
         })
       }
-      if (req.body.favorite != undefined && req.body.favorite != null) {
+      if (req.body.favorite !== undefined && req.body.favorite !== null) {
         movies.andWhere({
           favorite: Equal(req.body.favorite)
         })
       }
-      if (req.body.studio != undefined && req.body.studio != null && req.body.studio != '') {
+      if (req.body.studio !== undefined && req.body.studio !== null && req.body.studio !== '') {
         movies.andWhere({
           studio: Equal(req.body.studio)
         })
       }
-      if (req.body.series != undefined && req.body.series != null && req.body.series != '') {
+      if (req.body.series !== undefined && req.body.series !== null && req.body.series !== '') {
         movies.andWhere({
           series: Equal(req.body.series)
         })
       }
-      movies.andWhere({
-        isDelete: Equal(false)
-      })
-      if (
-        req.body.viewCount != undefined &&
-        req.body.viewCount != null &&
-        req.body.viewCount == 0
-      ) {
+      if (req.body.viewCount !== undefined && req.body.viewCount !== null && req.body.viewCount === 0) {
         movies.andWhere({
           viewCount: Equal(req.body.viewCount)
         })
       }
       const result = await movies
+        .andWhere({
+          isDelete: Equal(false)
+        })
         .orderBy(
-          req.body.sortRule == 'RAND' ? 'RANDOM()' : 'movie.' + req.body.sort,
-          req.body.sortRule == 'RAND' ? 'ASC' : req.body.sortRule
+          req.body.sortRule === 'RAND' ? 'RANDOM()' : `movie.${req.body.sort}`,
+          req.body.sortRule === 'RAND' ? 'ASC' : req.body.sortRule
         )
         .take(req.body.pageSize)
         .skip((req.body.page - 1) * req.body.pageSize)
@@ -97,16 +96,18 @@ export function initMovieApi(server) {
     }
   })
 
-  server.post('/api/movie/all/movies', async (_req, res) => {
+  server.post('/api/movie/all/movies', async (req, res) => {
+    console.log(req.url)
     try {
-      const result = (await repository.find()).filter((x) => x.isDelete == false)
+      const result = (await repository.find()).filter(x => x.isDelete === false)
       res.status(200).json(result)
     } catch (error) {
       res.status(500).send(error)
     }
   })
 
-  server.post('/api/movie/all/actress', async (_req, res) => {
+  server.post('/api/movie/all/actress', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
 
@@ -122,7 +123,8 @@ export function initMovieApi(server) {
     }
   })
 
-  server.post('/api/movie/all/studio', async (_req, res) => {
+  server.post('/api/movie/all/studio', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
       const result = await movies
@@ -138,7 +140,8 @@ export function initMovieApi(server) {
     }
   })
 
-  server.post('/api/movie/all/director', async (_req, res) => {
+  server.post('/api/movie/all/director', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
       const result = await movies
@@ -154,7 +157,8 @@ export function initMovieApi(server) {
     }
   })
 
-  server.post('/api/movie/all/series', async (_req, res) => {
+  server.post('/api/movie/all/series', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
       const result = await movies
@@ -169,7 +173,8 @@ export function initMovieApi(server) {
       res.status(500).send(error)
     }
   })
-  server.post('/api/movie/all/tags', async (_req, res) => {
+  server.post('/api/movie/all/tags', async (req, res) => {
+    console.log(req.url)
     try {
       const movies = repository.createQueryBuilder('movie')
       const result = await movies
@@ -185,20 +190,22 @@ export function initMovieApi(server) {
     }
   })
 
-  server.get('/api/movie_total_file_size', async (_req, res) => {
+  server.get('/api/movie_total_file_size', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.sum('fileSize')
-      res.status(200).json(result)
+      res.status(200).json(result == null ? 0 : result)
     } catch (error) {
       res.status(500).send(error)
     }
   })
 
-  server.get('/api/movie_total_count', async (_req, res) => {
+  server.get('/api/movie_total_count', async (req, res) => {
+    console.log(req.url)
     try {
       // 所有未删除视频数量
       const result = await repository.countBy({
-        isDelete: false || undefined
+        isDelete: false
       })
       res.status(200).json(result)
     } catch (error) {
@@ -206,11 +213,12 @@ export function initMovieApi(server) {
     }
   })
 
-  server.get('/api/movie_favorites_count', async (_req, res) => {
+  server.get('/api/movie_favorites_count', async (req, res) => {
+    console.log(req.url)
     try {
       // 所有未删除视频数量
       const result = await repository.countBy({
-        isDelete: false || undefined,
+        isDelete: false,
         favorite: true
       })
       res.status(200).json(result)
@@ -220,6 +228,7 @@ export function initMovieApi(server) {
   })
 
   server.get('/api/movie/:num', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.findOneBy({ num: req.params.num })
       res.status(200).json(result)
@@ -229,6 +238,7 @@ export function initMovieApi(server) {
   })
 
   server.post('/api/movie/', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.save(req.body)
       res.status(200).json(result.id > 0)
@@ -238,6 +248,7 @@ export function initMovieApi(server) {
   })
 
   server.post('/api/movie/:num', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.update({ num: req.params.num }, req.body)
       res.status(200).json(result)
@@ -246,10 +257,11 @@ export function initMovieApi(server) {
     }
   })
 
-  server.delete('/api/movie/:id', async (req, res) => {
+  server.delete('/api/movie/', async (req, res) => {
+    console.log(req.url)
     try {
-      const result = await repository.remove(req.params.id)
-      res.status(200).json(result)
+      await repository.remove(req.body)
+      res.status(200).json(true)
     } catch (error) {
       res.status(500).send(error)
     }

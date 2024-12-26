@@ -1,10 +1,12 @@
+import type { Express } from 'express'
 import { AppDataSource } from '../data-source'
 import { Storage } from '../entity/storage'
 
-export function initStorageApi(server) {
+export function initStorageApi(server: Express) {
   const repository = AppDataSource.getRepository(Storage)
 
-  server.post('/api/storage/list', async (_req, res) => {
+  server.post('/api/storage/list', async (req, res) => {
+    console.log(req.url)
     try {
       const result = repository.find()
       res.status(200).json(result)
@@ -14,6 +16,7 @@ export function initStorageApi(server) {
   })
 
   server.get('/api/storage/:key', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.findOneBy({ key: req.params.key })
       res.status(200).json(result)
@@ -23,6 +26,7 @@ export function initStorageApi(server) {
   })
 
   server.post('/api/storage/', async (req, res) => {
+    console.log(req.url)
     try {
       req.body.createdTime = Date.now()
       req.body.updatedTime = Date.now()
@@ -35,6 +39,7 @@ export function initStorageApi(server) {
   })
 
   server.post('/api/storage/:key', async (req, res) => {
+    console.log(req.url)
     try {
       req.body.updatedTime = Date.now()
       const result = await repository.update({ key: req.params.key }, req.body)
@@ -45,6 +50,7 @@ export function initStorageApi(server) {
   })
 
   server.delete('/api/storage/', async (req, res) => {
+    console.log(req.url)
     try {
       const result = await repository.remove(req.body)
       res.status(200).json(result)
