@@ -105,18 +105,19 @@ export async function updateMovieLibrary() {
           .getMany()
           .then(allTags => {
             allTags.forEach(item => (item.value = 0))
-            const movieTags = addMovies
-            if (movieTags.length > 0) {
+            if (addMovies.length > 0) {
               console.log('update tags')
-              movieTags.forEach(item => {
+              addMovies.forEach(item => {
                 item.tags
                   .split('|')
                   .filter(x => x.length > 0)
                   .forEach(tag => {
                     const category = allTags.find(x => x.key === tag)
                     if (category) {
+                      console.log('tag ' + tag + ' count +1')
                       category.value++
                     } else {
+                      console.log('add new tag ' + tag)
                       allTags.push({
                         type: 'tag',
                         key: tag,
@@ -167,10 +168,12 @@ export async function updateMovieLibrary() {
                 if (actress) {
                   actress.videoCount = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length
                   actress.updatedTime = new Date().getTime()
+                  actress.isDelete = false
                   updateActress.push(actress)
                 } else {
                   updateActress.push({
                     createdTime: new Date().getTime(),
+                    isDelete: false,
                     favorite: false,
                     score: 0,
                     personalScore: 0,
@@ -273,7 +276,7 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
         isActor = false
       } else {
         const lineMatch = updateMovieInfo(line, isSet, isActor)
-        movieInfo[lineMatch.key] = lineMatch.value
+        movieInfo[lineMatch.key] += lineMatch.value
       }
     }
     movieInfo.year = Number.parseInt(movieInfo.releaseTime.substring(0, 4), 10)
@@ -288,10 +291,12 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
       }
       movieInfo.tags = formatMovieTags(movieInfo.tags, replaceTags)
       movieInfo.genres = formatMovieTags(movieInfo.genres, replaceTags)
+      if (movieInfo.tags.length === 0 && movieInfo.genres.length > 0) {
+        movieInfo.tags = movieInfo.genres
+      }
       // 复制nfo文件
       const nfoPath = join(thumbnails, movieInfo.num, movieInfo.num + getFileExtension(file))
       fsCopyFile(file, nfoPath)
-      console.log('copy file ok')
       const currentFolder = getFileFolder(file)
       const currentFolderFiles = files.filter(x => x.startsWith(currentFolder))
       movieInfo = findVideoFile(currentFolderFiles, movieInfo)
@@ -375,10 +380,10 @@ function updateMovieInfo(line: string, isSet: boolean, isActor: boolean) {
     result.value = getMatchContent(line, premieredRegex)
   } else if (tagRegex.test(line)) {
     result.key = 'tags'
-    result.value += `|${getMatchContent(line, tagRegex)}`
+    result.value = `|${getMatchContent(line, tagRegex)}`
   } else if (genreRegex.test(line)) {
     result.key = 'genres'
-    result.value += `|${getMatchContent(line, genreRegex)}`
+    result.value = `|${getMatchContent(line, genreRegex)}`
   } else if (directorRegex.test(line)) {
     result.key = 'director'
     result.value = getMatchContent(line, directorRegex)
@@ -393,7 +398,7 @@ function updateMovieInfo(line: string, isSet: boolean, isActor: boolean) {
     result.value = getMatchContent(line, nameRegex)
   } else if (isActor && line.startsWith('<name>')) {
     result.key = 'actress'
-    result.value += `|${getMatchContent(line, nameRegex)}`
+    result.value = `|${getMatchContent(line, nameRegex)}`
   }
   return result
 }
@@ -418,14 +423,14 @@ function getMatchContent(line: string, reg: RegExp) {
 function formatMovieTags(tags: string, replaceTags: Array<string>) {
   const tagsList = tags.split('|').filter(x => x.length > 0)
   let formatTag = ''
-  tagsList.forEach(tag => {
+  for (const tag of tagsList) {
     const target: string = replaceTags.find(x => x.startsWith(`${tag}|`)) ?? ''
-    if (target !== '') {
+    if (target === '') {
       formatTag += `|${tag}`
-    } else if (target.split('|')[1] === '删除') {
+    } else if (target.split('|')[1] !== '删除') {
       formatTag += `|${target.split('|')[1]}`
     }
-  })
+  }
   return formatTag.length > 0 ? `${formatTag}|` : ''
 }
 

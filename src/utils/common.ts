@@ -94,7 +94,7 @@ export function getFileExtension(filename: string) {
 
 export async function getFileStats(filePath: string) {
   try {
-    const stats = await promises.stat(filePath)
+    const stats = await promises.stat('/app/public/' + filePath)
     return stats
   } catch (err) {
     console.error('Error retrieving file stats:', err)
