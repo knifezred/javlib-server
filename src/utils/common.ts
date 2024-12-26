@@ -68,13 +68,16 @@ export async function saveFile(file: File) {
 }
 
 export async function fsCopyFile(source: string, destination: string) {
-  console.log(`copy file to ${destination}`)
-  if (!existsSync(destination)) {
-    if (!existsSync(getFileFolder(destination))) {
-      console.log(`mkdir ${destination}`)
-      promises.mkdir(getFileFolder(destination), { recursive: true })
+  try {
+    if (!existsSync(destination)) {
+      if (!existsSync(getFileFolder(destination))) {
+        console.log(`mkdir ${destination}`)
+        promises.mkdir(getFileFolder(destination), { recursive: true })
+      }
+      await promises.copyFile(source, destination)
     }
-    await promises.copyFile(source, destination)
+  } catch (error) {
+    console.warn(`copy ${source} to ${destination} error`, error)
   }
 }
 
@@ -97,7 +100,7 @@ export async function getFileStats(filePath: string) {
     const stats = await promises.stat('/app/public/' + filePath)
     return stats
   } catch (err) {
-    console.error('Error retrieving file stats:', err)
+    console.warn('Error getFileStats:', err)
   }
   return null
 }

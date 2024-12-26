@@ -337,7 +337,7 @@ function findVideoFile(files: string[], movieInfo: DbMovie) {
       dirFile.toLowerCase().endsWith('.wmv') ||
       dirFile.toLowerCase().endsWith('.iso')
     ) {
-      movieInfo.file += `${dirFile.replace('/app/public/', '/')},`
+      movieInfo.file += `${dirFile.replace('/app/public/', '/')}|`
       if (dirFile.toUpperCase().includes('-C.') || dirFile.toUpperCase().includes('-UC.')) {
         movieInfo.tags += '中文字幕|'
       }
