@@ -1,4 +1,4 @@
-import { existsSync, promises } from 'fs'
+import { existsSync, promises, unlinkSync } from 'fs'
 import { dirname, join } from 'path'
 // 格式化时间戳
 export function formatTimestamp(timestamp: number) {
@@ -118,4 +118,8 @@ export function getAppPath() {
 export function getPublicPath() {
   const appPath = join(getAppPath(), 'public')
   return appPath
+}
+
+export function fsDeleteFile(filePath: string) {
+  unlinkSync(filePath)
 }

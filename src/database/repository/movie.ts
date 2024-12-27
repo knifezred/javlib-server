@@ -1,5 +1,6 @@
 import type { Express } from 'express'
 import { Between, Equal, In, Like } from 'typeorm'
+import { fsDeleteFile } from '../../utils/common'
 import { AppDataSource } from '../data-source'
 import { Movie } from '../entity/movie'
 
@@ -260,7 +261,17 @@ export function initMovieApi(server: Express) {
   server.delete('/api/movie/', async (req, res) => {
     console.log(req.url)
     try {
-      await repository.remove(req.body)
+      var entity = req.body
+      // 删除视频文件
+      var file = entity.file
+      var files = file.split("|").filter((x: string) => x.length > 0)
+      files.forEach((filePath: string) => {
+        fsDeleteFile(filePath)
+      })
+      // 软删除
+      entity.isDelete = true
+      entity.fileSize = 0
+      await repository.save(req.body)
       res.status(200).json(true)
     } catch (error) {
       res.status(500).send(error)
