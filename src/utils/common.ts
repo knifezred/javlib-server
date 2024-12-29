@@ -36,7 +36,7 @@ export async function listAllDirFiles(directories: string[]) {
       encoding: 'utf-8',
       recursive: true
     })
-    console.log(`${dir} find files ${files.length}`)
+    console.log(`${dir} find files ${items.length}`)
     for (const item of items) {
       const fullPath = join(dir, item)
       if (!(await promises.stat(fullPath)).isDirectory()) {

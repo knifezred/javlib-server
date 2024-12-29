@@ -67,6 +67,7 @@ export async function updateMovieLibrary() {
             } else {
               const createMovieEntity = {
                 ...movieRes,
+                createdTime: movieInfo.createdTime,
                 file: movieInfo.file,
                 fileSize: movieInfo.fileSize,
                 isDelete: movieInfo.file.length === 0
