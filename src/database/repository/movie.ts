@@ -266,7 +266,7 @@ export function initMovieApi(server: Express) {
       var file = entity.file
       var files = file.split("|").filter((x: string) => x.length > 0)
       files.forEach((filePath: string) => {
-        fsDeleteFile(filePath)
+        fsDeleteFile('/app/public/' + filePath)
       })
       // 软删除
       entity.isDelete = true
