@@ -44,9 +44,7 @@ export function initMovieApi(server: Express) {
       }
       if (req.body.keyword !== undefined && req.body.keyword !== '') {
         movies.andWhere({
-          title: Like(`%${req.body.keyword}%`)
-        })
-        movies.orWhere({
+          title: Like(`%${req.body.keyword}%`),
           originTitle: Like(`%${req.body.keyword}%`)
         })
       }
