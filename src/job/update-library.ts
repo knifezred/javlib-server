@@ -114,7 +114,6 @@ export async function updateMovieLibrary() {
                   .forEach(tag => {
                     const category = allTags.find(x => x.key === tag)
                     if (category) {
-                      console.log('tag ' + tag + ' count +1')
                       category.value++
                     } else {
                       console.log('add new tag ' + tag)
@@ -280,7 +279,6 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
       }
     }
     movieInfo.year = Number.parseInt(movieInfo.releaseTime.substring(0, 4), 10)
-    console.log('read nfo file success')
 
     if (movieInfo.uniqueid !== '') {
       if (movieInfo.num === '') {
@@ -301,7 +299,7 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
       const currentFolderFiles = files.filter(x => x.startsWith(currentFolder))
       movieInfo = findVideoFile(currentFolderFiles, movieInfo)
       if (movieInfo.file.length > 0) {
-        const stats = await getFileStats(movieInfo.file.split(',')[0])
+        const stats = await getFileStats(movieInfo.file.split('|')[0])
         if (stats) {
           movieInfo.fileSize += stats.size
           movieInfo.createdTime = stats.mtime.getTime()
