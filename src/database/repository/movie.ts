@@ -266,12 +266,12 @@ export function initMovieApi(server: Express) {
       var file = entity.file
       var files = file.split("|").filter((x: string) => x.length > 0)
       files.forEach((filePath: string) => {
-        fsDeleteFile('/app/public/' + filePath)
+        fsDeleteFile(filePath)
       })
       // 软删除
       entity.isDelete = true
       entity.fileSize = 0
-      await repository.save(req.body)
+      await repository.save(entity)
       res.status(200).json(true)
     } catch (error) {
       res.status(500).send(error)

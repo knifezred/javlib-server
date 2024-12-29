@@ -41,11 +41,9 @@ export async function listAllDirFiles(directories: string[]) {
       const fullPath = join(dir, item)
       if (!(await promises.stat(fullPath)).isDirectory()) {
         files.push(fullPath)
-        console.log(fullPath)
       }
     }
   }
-  console.log('dir recursively')
   return files
 }
 
@@ -75,6 +73,7 @@ export async function fsCopyFile(source: string, destination: string) {
         promises.mkdir(getFileFolder(destination), { recursive: true })
       }
       await promises.copyFile(source, destination)
+      console.warn(`copy ${source} to ${destination}`)
     }
   } catch (error) {
     console.warn(`copy ${source} to ${destination} error`, error)
@@ -97,7 +96,7 @@ export function getFileExtension(filename: string) {
 
 export async function getFileStats(filePath: string) {
   try {
-    const stats = await promises.stat('/app/public/' + filePath)
+    const stats = await promises.stat(join(getPublicPath(), filePath))
     return stats
   } catch (err) {
     console.warn('Error getFileStats:', err)
@@ -121,5 +120,6 @@ export function getPublicPath() {
 }
 
 export function fsDeleteFile(filePath: string) {
-  unlinkSync(filePath)
+  unlinkSync(join(getPublicPath(), filePath))
+  console.log('delete file: ' + filePath)
 }
