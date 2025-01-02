@@ -32,7 +32,7 @@ export function initMovieApi(server: Express) {
         }
       }
       // and查询
-      if (req.body.tags !== null && req.body.tags !== undefined) {
+      if (req.body.tags !== null && req.body.tags !== undefined && req.body.tags.length > 0) {
         const whereParams: any = {}
         let whereStr = ''
         req.body.tags.forEach((tag: string, index: number) => {
