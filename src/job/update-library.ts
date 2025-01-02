@@ -60,8 +60,10 @@ export async function updateMovieLibrary() {
                 id: movieRes.id,
                 isDelete: movieInfo.file.length === 0,
                 favorite: movieRes.favorite,
+                favoriteTime: movieRes.favoriteTime,
                 personalScore: movieRes.personalScore,
-                viewCount: movieRes.viewCount
+                viewCount: movieRes.viewCount,
+                viewTime: movieRes.viewTime
               } as Movie
               addMovies.push(updateMovieEntity)
             } else {
@@ -167,12 +169,12 @@ export async function updateMovieLibrary() {
                 const actress = actressList.find(x => x.name === actressName)
                 if (actress) {
                   actress.videoCount = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length
-                  actress.updatedTime = new Date().getTime()
+                  actress.updatedTime = Date.now()
                   actress.isDelete = false
                   updateActress.push(actress)
                 } else {
                   updateActress.push({
-                    createdTime: new Date().getTime(),
+                    createdTime: Date.now(),
                     isDelete: false,
                     favorite: false,
                     score: 0,
@@ -440,7 +442,9 @@ interface DbMovie extends MovieInfo {
   updatedTime?: number
   isDelete?: boolean
   viewCount: number // 查看次数
+  viewTime?: number
   favorite: boolean // 收藏
+  favoriteTime?: number
   personalScore: number | undefined; // 私人评分
   [key: string]: any
 }

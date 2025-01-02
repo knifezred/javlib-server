@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class Actress {
@@ -6,7 +6,6 @@ export class Actress {
   id?: number
   @Column({ type: 'integer' })
   createdTime!: number // 添加时间
-  @UpdateDateColumn({ type: 'integer', nullable: true })
   @Column({ type: 'integer', nullable: true })
   updatedTime?: number
   @Column({ type: 'boolean', nullable: true })

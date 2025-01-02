@@ -1,5 +1,5 @@
 import type { Express } from 'express'
-import { Between, Equal, In, Like } from 'typeorm'
+import { Between, Equal, In, Like, MoreThanOrEqual } from 'typeorm'
 import { fsDeleteFile } from '../../utils/common'
 import { AppDataSource } from '../data-source'
 import { Movie } from '../entity/movie'
@@ -68,10 +68,18 @@ export function initMovieApi(server: Express) {
           series: Equal(req.body.series)
         })
       }
-      if (req.body.viewCount !== undefined && req.body.viewCount !== null && req.body.viewCount === 0) {
-        movies.andWhere({
-          viewCount: Equal(req.body.viewCount)
-        })
+      if (req.body.viewCount !== undefined && req.body.viewCount !== null && req.body.viewCount > -1) {
+        if (req.body.viewCount == 0) {
+          // 0 未播放
+          movies.andWhere({
+            viewCount: 0
+          })
+        } else {
+          // 1 已播放
+          movies.andWhere({
+            viewCount: MoreThanOrEqual(req.body.viewCount)
+          })
+        }
       }
       const result = await movies
         .andWhere({
@@ -239,7 +247,9 @@ export function initMovieApi(server: Express) {
   server.post('/api/movie/', async (req, res) => {
     console.log(req.url)
     try {
-      const result = await repository.save(req.body)
+      var entity = req.body
+      entity.updatedTime = Date.now()
+      const result = await repository.save(entity)
       res.status(200).json(result.id > 0)
     } catch (error) {
       res.status(500).send(error)
@@ -249,7 +259,9 @@ export function initMovieApi(server: Express) {
   server.post('/api/movie/:num', async (req, res) => {
     console.log(req.url)
     try {
-      const result = await repository.update({ num: req.params.num }, req.body)
+      var entity = req.body
+      entity.updatedTime = Date.now()
+      const result = await repository.update({ num: req.params.num }, entity)
       res.status(200).json(result)
     } catch (error) {
       res.status(500).send(error)

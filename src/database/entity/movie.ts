@@ -1,4 +1,4 @@
-import { BeforeUpdate, Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class Movie {
@@ -6,7 +6,7 @@ export class Movie {
   id!: number
   @Column({ type: 'integer' })
   createdTime!: number // 添加时间
-  @UpdateDateColumn({ type: 'integer', nullable: true })
+  @Column({ type: 'integer', nullable: true })
   updatedTime?: number
   @Column({ type: 'boolean', default: false })
   isDelete!: boolean
@@ -48,17 +48,16 @@ export class Movie {
   releaseTime!: string // 上映时间
   @Column({ type: 'integer' })
   viewCount!: number // 查看次数
+  @Column({ type: 'integer', nullable: true })
+  viewTime?: number // 收藏时间
   @Column({ type: 'boolean' })
   favorite!: boolean // 收藏
+  @Column({ type: 'integer', nullable: true })
+  favoriteTime?: number // 收藏时间
   @Column({ type: 'float' })
   score!: number // 评分
   @Column({ type: 'float' })
   personalScore: number | undefined // 私人评分
   @Column({ type: 'integer' })
   fileSize!: number // 文件大小
-
-  @BeforeUpdate()
-  setUpdateAt() {
-    this.updatedTime = new Date().getTime()
-  }
 }
