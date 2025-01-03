@@ -43,10 +43,13 @@ export function initMovieApi(server: Express) {
         movies.andWhere(whereStr, whereParams)
       }
       if (req.body.keyword !== undefined && req.body.keyword !== '') {
-        movies.andWhere({
-          title: Like(`%${req.body.keyword}%`),
-          originTitle: Like(`%${req.body.keyword}%`)
-        })
+        movies
+          .orWhere({
+            name: Like(`%${req.body.keyword}%`)
+          })
+          .orWhere({
+            originTitle: Like(`%${req.body.keyword}%`)
+          })
       }
       if (req.body.actress !== undefined && req.body.actress !== '') {
         movies.andWhere({
