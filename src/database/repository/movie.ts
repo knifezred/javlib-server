@@ -42,13 +42,13 @@ export function initMovieApi(server: Express) {
         whereStr = whereStr.substring(0, whereStr.length - 4)
         movies.andWhere(whereStr, whereParams)
       }
-      if (req.body.keyword !== undefined && req.body.keyword !== '') {
+      if (req.body.keyword !== null && req.body.keyword !== undefined && req.body.keyword !== '') {
         movies
           .orWhere({
-            name: Like(`%${req.body.keyword}%`)
+            title: Like(`%${req.body.keyword}%`)
           })
           .orWhere({
-            originTitle: Like(`%${req.body.keyword}%`)
+            introduction: Like(`%${req.body.keyword}%`)
           })
       }
       if (req.body.actress !== undefined && req.body.actress !== '') {
