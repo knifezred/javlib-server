@@ -44,11 +44,8 @@ export function initMovieApi(server: Express) {
       }
       if (req.body.keyword !== null && req.body.keyword !== undefined && req.body.keyword !== '') {
         movies
-          .orWhere({
+          .andWhere({
             title: Like(`%${req.body.keyword}%`)
-          })
-          .orWhere({
-            introduction: Like(`%${req.body.keyword}%`)
           })
       }
       if (req.body.actress !== undefined && req.body.actress !== '') {
