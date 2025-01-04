@@ -62,6 +62,9 @@ export function initActressApi(server: Express) {
         })
       }
       const result = await queryBuilder
+        .andWhere({
+          isDelete: Equal(false)
+        })
         .orderBy(
           req.body.sortRule === 'RAND' ? 'RANDOM()' : `actress.${req.body.sort}`,
           req.body.sortRule === 'RAND' ? 'ASC' : req.body.sortRule

@@ -210,6 +210,7 @@ export async function updateMovieLibrary() {
                 const tempActress = actressList.find(x => x.name === actressName)
                 if (tempActress) {
                   tempActress.videoCount = 0
+                  tempActress.isDelete = true
                   updateActress.push(tempActress)
                 }
               }
@@ -264,7 +265,6 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
     fileSize: 0
   }
   try {
-    console.log(`read nfo file: ${file}`)
     const data = await readFile(file)
     const lines = data.split('\n').map(line => line.trim())
     let isSet = false
