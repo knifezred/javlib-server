@@ -52,39 +52,46 @@ export async function updateMovieLibrary() {
           })
         const results = await Promise.all(promises)
         results.forEach(movieInfo => {
-          const movieRes = allMovies.find(x => x.num === movieInfo.num)
-          if (movieRes) {
-            if (movieRes.isDelete) {
-              const updateMovieEntity = {
-                ...movieInfo,
-                id: movieRes.id,
-                isDelete: movieInfo.file.length === 0,
-                favorite: movieRes.favorite,
-                favoriteTime: movieRes.favoriteTime,
-                personalScore: movieRes.personalScore,
-                viewCount: movieRes.viewCount,
-                viewTime: movieRes.viewTime
-              } as Movie
-              addMovies.push(updateMovieEntity)
-            } else {
-              const createMovieEntity = {
-                ...movieRes,
-                createdTime: movieInfo.createdTime,
-                file: movieInfo.file,
-                fileSize: movieInfo.fileSize,
-                isDelete: movieInfo.file.length === 0
-              } as Movie
-              addMovies.push(createMovieEntity)
-            }
+          const duplicateMovie = addMovies.find(x => x.num == movieInfo.num)
+          if (duplicateMovie) {
+            console.log(`duplicate num : ${movieInfo.num}`)
+            duplicateMovie.file += movieInfo.file
+            duplicateMovie.fileSize = duplicateMovie.fileSize + movieInfo.fileSize
           } else {
-            const dbMovie = {
-              ...movieInfo,
-              isDelete: movieInfo.file.length === 0,
-              favorite: false,
-              personalScore: 0,
-              viewCount: 0
-            } as Movie
-            addMovies.push(dbMovie)
+            const movieRes = allMovies.find(x => x.num === movieInfo.num)
+            if (movieRes) {
+              if (movieRes.isDelete) {
+                const updateMovieEntity = {
+                  ...movieInfo,
+                  id: movieRes.id,
+                  isDelete: movieInfo.file.length === 0,
+                  favorite: movieRes.favorite,
+                  favoriteTime: movieRes.favoriteTime,
+                  personalScore: movieRes.personalScore,
+                  viewCount: movieRes.viewCount,
+                  viewTime: movieRes.viewTime
+                } as Movie
+                addMovies.push(updateMovieEntity)
+              } else {
+                const createMovieEntity = {
+                  ...movieRes,
+                  createdTime: movieInfo.createdTime,
+                  file: movieInfo.file,
+                  fileSize: movieInfo.fileSize,
+                  isDelete: movieInfo.file.length === 0
+                } as Movie
+                addMovies.push(createMovieEntity)
+              }
+            } else {
+              const dbMovie = {
+                ...movieInfo,
+                isDelete: movieInfo.file.length === 0,
+                favorite: false,
+                personalScore: 0,
+                viewCount: 0
+              } as Movie
+              addMovies.push(dbMovie)
+            }
           }
         })
         const childrenMovies = chunkArray(addMovies as never[], 100)
