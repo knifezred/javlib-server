@@ -271,7 +271,7 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
     let isActor = false
     for (const line of lines) {
       if (line.startsWith('<num>')) {
-        movieInfo.num = line.trim().slice(5, line.length - 5)
+        movieInfo.num = line.replace('<num>', '').replace('</num>', '').trim()
         movieInfo.uniqueid = movieInfo.num
       } else if (line.startsWith('<uniqueid type="num"')) {
         movieInfo.num = getMatchContent(line, numRegex)
