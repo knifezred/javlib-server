@@ -60,28 +60,17 @@ export async function updateMovieLibrary() {
           } else {
             const movieRes = allMovies.find(x => x.num === movieInfo.num)
             if (movieRes) {
-              if (movieRes.isDelete) {
-                const updateMovieEntity = {
-                  ...movieInfo,
-                  id: movieRes.id,
-                  isDelete: movieInfo.file.length === 0,
-                  favorite: movieRes.favorite,
-                  favoriteTime: movieRes.favoriteTime,
-                  personalScore: movieRes.personalScore,
-                  viewCount: movieRes.viewCount,
-                  viewTime: movieRes.viewTime
-                } as Movie
-                addMovies.push(updateMovieEntity)
-              } else {
-                const createMovieEntity = {
-                  ...movieRes,
-                  createdTime: movieInfo.createdTime,
-                  file: movieInfo.file,
-                  fileSize: movieInfo.fileSize,
-                  isDelete: movieInfo.file.length === 0
-                } as Movie
-                addMovies.push(createMovieEntity)
-              }
+              const updateMovieEntity = {
+                ...movieInfo,
+                id: movieRes.id,
+                isDelete: movieInfo.file.length === 0,
+                favorite: movieRes.favorite,
+                favoriteTime: movieRes.favoriteTime,
+                personalScore: movieRes.personalScore,
+                viewCount: movieRes.viewCount,
+                viewTime: movieRes.viewTime
+              } as Movie
+              addMovies.push(updateMovieEntity)
             } else {
               const dbMovie = {
                 ...movieInfo,
