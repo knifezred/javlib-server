@@ -1,0 +1,1 @@
+import{bi as e}from"./index-wh1bsACR.js";function r(t){return e({url:"/category/list",method:"post",data:t})}function a(t){return e({url:`/category/${t.key}`,method:"post",data:t})}export{r as f,a as u};
