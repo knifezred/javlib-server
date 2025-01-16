@@ -288,6 +288,9 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
       }
       if (movieInfo.actress.length > 0) {
         movieInfo.actress += '|'
+        if (movieInfo.actress.includes('|女優|')) {
+          movieInfo.actress = movieInfo.actress.replace('|女優|', '|')
+        }
       }
       movieInfo.tags = formatMovieTags(movieInfo.tags, replaceTags)
       movieInfo.genres = formatMovieTags(movieInfo.genres, replaceTags)
