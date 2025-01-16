@@ -201,7 +201,7 @@ export function initMovieApi(server: Express) {
   server.post('/api/movie/recent/videos', async (req, res) => {
     console.log(req.url)
     try {
-      const query = `select DATE(datetime(createdTime / 1000, 'unixepoch', 'localtime')) AS title,count(*) as fileSize from movie group by  DATE(datetime(createdTime / 1000, 'unixepoch', 'localtime')) order by createdTime limit ` + req.body.limit
+      const query = `select DATE(datetime(createdTime / 1000, 'unixepoch', 'localtime')) AS title,count(*) as fileSize from movie group by  DATE(datetime(createdTime / 1000, 'unixepoch', 'localtime')) order by createdTime desc limit ` + req.body.limit
       const result = await repository.query(query)
       console.log(result)
       res.status(200).json(result)
