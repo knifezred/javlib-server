@@ -163,34 +163,63 @@ export async function updateMovieLibrary() {
                   }
                 })
             })
+            // 根据映射表替换历史数据演员名称并加入待更新列表
+            actressMapping.forEach(mapItem => {
+              const oName = mapItem.split('|')[0]
+              var oActress = actressList.find(x => x.name == oName && x.score > 0)
+              if (oActress) {
+                if (!oActress.alias.includes(oActress.name)) {
+                  oActress.alias = oActress.name + ',' + oActress.alias
+                }
+                oActress.name = mapItem.split('|')[1]
+                // 本次更新不存在该演员视频时清空数量并删除
+                if (!actressNames.includes(oActress.name)) {
+                  oActress.isDelete = true
+                  oActress.videoCount = 0
+                }
+                updateActress.push(oActress)
+              }
+            })
             const actressMovies = addMovies.filter(x => x.isDelete === false)
+            // 不在映射列表中且无视频的演员清空视频数量并删除
             actressList.forEach(actressItem => {
-              // 名字不存在
               if (!actressNames.includes(actressItem.name)) {
                 actressItem.videoCount = 0
                 actressItem.isDelete = true
-                updateActress.push(actressItem)
+                if (updateActress.filter(x => x.name == actressItem.name).length == 0) {
+                  updateActress.push(actressItem)
+                }
               }
             })
+            // 循环本次更新演员列表，修改老数据，新增新数据
             actressNames.forEach(actressName => {
               const actressMovie = actressMovies.find(x => x.actress.includes(`|${actressName}|`))
+              // 是否存在拥有该演员名称的视频
               if (actressMovie) {
-                const actress = actressList.find(x => x.name === actressName)
+                let actress = actressList.find(x => x.name === actressName)
                 if (actress) {
-                  actress.videoCount = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length
-                  actress.updatedTime = Date.now()
-                  actress.isDelete = false
-                  updateActress.push(actress)
+                  // 映射表中存在,直接从待更新列表更新
+                  if (updateActress.filter(x => x.name == actressName).length > 0) {
+                    actress = updateActress.find(x => x.name == actressName)
+                    actress.updatedTime = Date.now()
+                    actress.videoCount = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length
+                    actress.isDelete = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length === 0
+                  } else {
+                    actress.videoCount = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length
+                    actress.updatedTime = Date.now()
+                    actress.isDelete = actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length === 0
+                    updateActress.push(actress)
+                  }
                 } else {
                   updateActress.push({
                     createdTime: Date.now(),
-                    isDelete: false,
+                    isDelete: actressMovies.filter(x => x.actress.includes(`|${actressName}|`)).length === 0,
                     favorite: false,
                     score: 0,
                     personalScore: 0,
                     category: '',
                     name: actressName,
-                    alias: '',
+                    alias: actressName,
                     introduction: '',
                     avatar: actressMovie.poster,
                     cover: '',
@@ -208,13 +237,9 @@ export async function updateMovieLibrary() {
                     debutDate: actressMovie.year ? actressMovie.year.toString() : new Date().getFullYear().toString()
                   })
                 }
+
               } else {
-                const tempActress = actressList.find(x => x.name === actressName)
-                if (tempActress) {
-                  tempActress.videoCount = 0
-                  tempActress.isDelete = true
-                  updateActress.push(tempActress)
-                }
+                // 必定存在，此处不处理
               }
             })
             return updateActress
@@ -298,7 +323,7 @@ async function readNfoInfo(file: string, files: string[]) {
       if (movieInfo.num === '') {
         movieInfo.num = movieInfo.uniqueid
       }
-      movieInfo.actress = mappingField(movieInfo.tags, actressMapping)
+      movieInfo.actress = mappingField(movieInfo.actress, actressMapping)
       movieInfo.tags = mappingField(movieInfo.tags, replaceTags)
       movieInfo.genres = mappingField(movieInfo.genres, replaceTags)
       if (movieInfo.tags.length === 0 && movieInfo.genres.length > 0) {
