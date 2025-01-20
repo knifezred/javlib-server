@@ -28,6 +28,8 @@ const numRegex = /^<uniqueid.*>(.*?)<\/uniqueid>$/
 const nameRegex = /^<name>(.*?)<\/name>$/
 const thumbnails = join(getPublicPath(), 'thumbnails')
 
+let replaceTags = [] as string[]
+let actressMapping = [] as string[]
 export async function updateMovieLibrary() {
   console.log('updateMovieLibrary start')
   const storageRepo = AppDataSource.getRepository(Storage)
@@ -36,9 +38,12 @@ export async function updateMovieLibrary() {
   const addMovies: Array<Movie> = []
   console.log(`find ${allMovies.length} movies in database`)
   const tagIndex = await storageRepo.findOneBy({ key: 'tag_index' })
-  let replaceTags = [] as string[]
   if (tagIndex !== null) {
     replaceTags = tagIndex.value.split('\n')
+  }
+  const actressMappingResult = await storageRepo.findOneBy({ key: 'actress_mapping' })
+  if (actressMappingResult !== null) {
+    actressMapping = actressMappingResult.value.split('\n')
   }
   const res = await storageRepo.findOneBy({ key: 'media_folders' })
   if (res) {
@@ -48,7 +53,7 @@ export async function updateMovieLibrary() {
         const promises = files
           .filter(x => x.toLowerCase().endsWith('.nfo'))
           .map(file => {
-            return readNfoInfo(file, replaceTags, files)
+            return readNfoInfo(file, files)
           })
         const results = await Promise.all(promises)
         results.forEach(movieInfo => {
@@ -159,6 +164,14 @@ export async function updateMovieLibrary() {
                 })
             })
             const actressMovies = addMovies.filter(x => x.isDelete === false)
+            actressList.forEach(actressItem => {
+              // 名字不存在
+              if (!actressNames.includes(actressItem.name)) {
+                actressItem.videoCount = 0
+                actressItem.isDelete = true
+                updateActress.push(actressItem)
+              }
+            })
             actressNames.forEach(actressName => {
               const actressMovie = actressMovies.find(x => x.actress.includes(`|${actressName}|`))
               if (actressMovie) {
@@ -221,11 +234,10 @@ export async function updateMovieLibrary() {
         console.log(err)
       })
   }
-  console.log('updateMovieLibrary end')
   return addMovies.length
 }
 
-async function readNfoInfo(file: string, replaceTags: string[], files: string[]) {
+async function readNfoInfo(file: string, files: string[]) {
   let movieInfo: DbMovie = {
     createdTime: new Date().getTime(),
     isDelete: false,
@@ -286,14 +298,9 @@ async function readNfoInfo(file: string, replaceTags: string[], files: string[])
       if (movieInfo.num === '') {
         movieInfo.num = movieInfo.uniqueid
       }
-      if (movieInfo.actress.length > 0) {
-        movieInfo.actress += '|'
-        if (movieInfo.actress.includes('|女優|')) {
-          movieInfo.actress = movieInfo.actress.replace('|女優|', '|')
-        }
-      }
-      movieInfo.tags = formatMovieTags(movieInfo.tags, replaceTags)
-      movieInfo.genres = formatMovieTags(movieInfo.genres, replaceTags)
+      movieInfo.actress = mappingField(movieInfo.tags, actressMapping)
+      movieInfo.tags = mappingField(movieInfo.tags, replaceTags)
+      movieInfo.genres = mappingField(movieInfo.genres, replaceTags)
       if (movieInfo.tags.length === 0 && movieInfo.genres.length > 0) {
         movieInfo.tags = movieInfo.genres
       }
@@ -422,14 +429,14 @@ function getMatchContent(line: string, reg: RegExp) {
   return ''
 }
 
-// 格式化影片标签
-function formatMovieTags(tags: string, replaceTags: Array<string>) {
-  const tagsList = tags.split('|').filter(x => x.length > 0)
+// 映射影片字段
+function mappingField(field: string, mapping: string[]) {
+  const fieldArray = field.split('|').filter(x => x.length > 0)
   let formatTag = ''
-  for (const tag of tagsList) {
-    const target: string = replaceTags.find(x => x.startsWith(`${tag}|`)) ?? ''
+  for (const item of fieldArray) {
+    const target: string = mapping.find(x => x.startsWith(`${item}|`)) ?? ''
     if (target === '') {
-      formatTag += `|${tag}`
+      formatTag += `|${item}`
     } else if (target.split('|')[1] !== '删除') {
       formatTag += `|${target.split('|')[1]}`
     }
