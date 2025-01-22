@@ -1,4 +1,4 @@
-import { existsSync, promises, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, promises, unlinkSync } from 'fs'
 import { dirname, join } from 'path'
 // 格式化时间戳
 export function formatTimestamp(timestamp: number) {
@@ -67,13 +67,14 @@ export async function saveFile(file: File) {
 
 export async function fsCopyFile(source: string, destination: string) {
   try {
-    if (!existsSync(destination)) {
-      if (!existsSync(getFileFolder(destination))) {
-        console.log(`mkdir ${destination}`)
-        promises.mkdir(getFileFolder(destination), { recursive: true })
-      }
+    // 创建不存在的文件夹
+    if (!existsSync(getFileFolder(destination))) {
+      console.log(`mkdir ${destination}`)
+      mkdirSync(getFileFolder(destination), { recursive: true })
+    }
+    // 不存在 或者 以nfo结尾 时复制文件
+    if (!existsSync(destination) || source.endsWith('.nfo')) {
       await promises.copyFile(source, destination)
-      console.warn(`copy ${source} to ${destination}`)
     }
   } catch (error) {
     console.warn(`copy ${source} to ${destination} error`, error)

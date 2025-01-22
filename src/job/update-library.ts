@@ -152,8 +152,10 @@ export async function updateMovieLibrary() {
         actressRepo
           .find()
           .then(actressList => {
+            // 有影片的演员列表
             const actressNames: string[] = []
-            addMovies.forEach(movie => {
+            const actressMovies = addMovies.filter(x => x.isDelete === false)
+            actressMovies.forEach(movie => {
               movie.actress
                 .split('|')
                 .filter(x => x.length > 0)
@@ -180,15 +182,12 @@ export async function updateMovieLibrary() {
                 updateActress.push(oActress)
               }
             })
-            const actressMovies = addMovies.filter(x => x.isDelete === false)
             // 不在映射列表中且无视频的演员清空视频数量并删除
             actressList.forEach(actressItem => {
-              if (!actressNames.includes(actressItem.name)) {
+              if (!actressNames.includes(actressItem.name) && actressMapping.filter(x => x.includes(actressItem.name)).length == 0) {
                 actressItem.videoCount = 0
                 actressItem.isDelete = true
-                if (updateActress.filter(x => x.name == actressItem.name).length == 0) {
-                  updateActress.push(actressItem)
-                }
+                updateActress.push(actressItem)
               }
             })
             // 循环本次更新演员列表，修改老数据，新增新数据
@@ -238,9 +237,16 @@ export async function updateMovieLibrary() {
                   })
                 }
 
-              } else {
-                // 必定存在，此处不处理
               }
+              // else {
+              //   // 无影片演员
+              //   const tempActress = actressList.find(x => x.name === actressName)
+              //   if (tempActress) {
+              //     tempActress.videoCount = 0
+              //     tempActress.isDelete = true
+              //     updateActress.push(tempActress)
+              //   }
+              // }
             })
             return updateActress
           })
