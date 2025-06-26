@@ -48,6 +48,12 @@ export function initMovieApi(server: Express) {
             title: Like(`%${req.body.keyword}%`)
           })
       }
+      if (req.body.folder !== null && req.body.folder !== undefined && req.body.folder !== '') {
+        movies
+          .andWhere({
+            file: Like(`${req.body.folder}%`)
+          })
+      }
       if (req.body.actress !== undefined && req.body.actress !== '') {
         movies.andWhere({
           actress: Like(`%|${req.body.actress}|%`)
