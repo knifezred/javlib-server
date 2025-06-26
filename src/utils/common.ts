@@ -47,6 +47,31 @@ export async function listAllDirFiles(directories: string[]) {
   return files
 }
 
+export async function getFolderCover(folder: string) {
+  const imgList: string[] = []
+  try {
+    const files = await promises.readdir(folder, {
+      encoding: 'utf-8',
+      recursive: true
+    })
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        if (file.endsWith('poster.jpg') || file.endsWith('poster.png') || file.endsWith('poster.webp')) {
+          imgList.push(file)
+          if (imgList.length >= 3) {
+            return imgList
+          }
+        }
+      }
+    }
+    return imgList
+  } catch (error) {
+    console.log(error)
+  }
+  return imgList
+}
+
 export async function readFile(path: string) {
   try {
     const fileData = await promises.readFile(path, 'utf8')
