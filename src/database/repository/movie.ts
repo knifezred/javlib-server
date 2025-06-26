@@ -75,7 +75,7 @@ export function initMovieApi(server: Express) {
             viewCount: 0
           })
         } else {
-          // 1 已播放
+          // >=1 已播放
           movies.andWhere({
             viewCount: MoreThanOrEqual(req.body.viewCount)
           })

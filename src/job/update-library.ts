@@ -28,6 +28,9 @@ const numRegex = /^<uniqueid.*>(.*?)<\/uniqueid>$/
 const nameRegex = /^<name>(.*?)<\/name>$/
 const thumbnails = join(getPublicPath(), 'thumbnails')
 
+// 支持的视频文件扩展名列表
+const VIDEO_EXTENSIONS = ['mp4', 'mkv', 'wmv', 'avi', 'mov', 'rmvb', 'ts', 'flv', 'iso', 'strm']
+
 let replaceTags = [] as string[]
 let actressMapping = [] as string[]
 export async function updateMovieLibrary() {
@@ -372,12 +375,10 @@ function findVideoFile(files: string[], movieInfo: DbMovie) {
       }
     }
     // 兼容多视频
-    if (
-      dirFile.toLowerCase().endsWith('.mp4') ||
-      dirFile.toLowerCase().endsWith('.mkv') ||
-      dirFile.toLowerCase().endsWith('.wmv') ||
-      dirFile.toLowerCase().endsWith('.iso')
-    ) {
+    const isVideoFile = VIDEO_EXTENSIONS.some(ext =>
+      dirFile.toLowerCase().endsWith(`.${ext}`)
+    )
+    if (isVideoFile) {
       movieInfo.file += `${dirFile.replace('/app/public/', '/')}|`
       if (dirFile.toUpperCase().includes('-C.') || dirFile.toUpperCase().includes('-UC.')) {
         movieInfo.tags += '中文字幕|'

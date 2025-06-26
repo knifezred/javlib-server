@@ -141,6 +141,18 @@ export function initActressApi(server: Express) {
     }
   })
 
+  // 根据id更新演员
+  server.post('/api/actress/:id/', async (req, res) => {
+    try {
+      console.log(req.url)
+      req.body.updatedTime = Date.now()
+      const result = await repository.update({ id: Number(req.params.id) }, req.body)
+      res.status(200).json(result)
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  })
+
   server.delete('/api/actress/', async (req, res) => {
     try {
       console.log(req.url)
