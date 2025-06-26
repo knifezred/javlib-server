@@ -6,3 +6,5 @@
 /public/thumbnails
 /release
 *.log
+javlib-server.tar.gz
+pnpm-workspace.yaml
