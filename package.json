@@ -1,6 +1,6 @@
 {
   "name": "javlib-server",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "description": "JavLib影视库",
   "main": "./dist/index.js",
   "scripts": {
