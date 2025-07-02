@@ -93,6 +93,15 @@ export async function getActressImage(actress: string, type: string = 'banner') 
   return ''
 }
 
+export function checkActressImageExist(actress: string, type: string = 'banner') {
+  const actorPath = join(getAppPath(), 'public', 'actor', actress, type)
+  const extensions = ['.jpg', '.png', '.webp']
+  if (extensions.some(ext => existsSync(actorPath + ext))) {
+    return true
+  }
+  return false
+}
+
 export async function readFile(path: string) {
   try {
     const fileData = await promises.readFile(path, 'utf8')
@@ -111,7 +120,7 @@ export async function saveFile(file: File) {
   return filePath
 }
 
-export async function fsCopyFile(source: string, destination: string) {
+export async function fsCopyFile(source: string, destination: string, force: boolean = false) {
   try {
     // 创建不存在的文件夹
     if (!existsSync(getFileFolder(destination))) {
@@ -119,7 +128,7 @@ export async function fsCopyFile(source: string, destination: string) {
       mkdirSync(getFileFolder(destination), { recursive: true })
     }
     // 不存在 或者 以nfo结尾 时复制文件
-    if (!existsSync(destination) || source.endsWith('.nfo')) {
+    if (!existsSync(destination) || source.endsWith('.nfo') || force) {
       await promises.copyFile(source, destination)
     }
   } catch (error) {

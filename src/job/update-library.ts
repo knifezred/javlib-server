@@ -5,6 +5,7 @@ import { Category } from '../database/entity/category'
 import { Movie } from '../database/entity/movie'
 import { Storage } from '../database/entity/storage'
 import {
+  checkActressImageExist,
   fsCopyFile,
   getFileExtension,
   getFileFolder,
@@ -199,6 +200,13 @@ export async function updateMovieLibrary() {
               // 是否存在拥有该演员名称的视频
               if (actressMovie) {
                 let actress = actressList.find(x => x.name === actressName)
+                if (!checkActressImageExist(actressName, 'avatar')) {
+                  if (actress) {
+                    fsCopyFile(join(getPublicPath(), actress.avatar), join(getPublicPath(), 'actor', actressName, 'avatar.jpg'))
+                  } else {
+                    fsCopyFile(join(getPublicPath(), actressMovie.poster), join(getPublicPath(), 'actor', actressName, 'avatar.jpg'))
+                  }
+                }
                 if (actress) {
                   // 映射表中存在,直接从待更新列表更新
                   if (updateActress.filter(x => x.name == actressName).length > 0) {

@@ -2,7 +2,8 @@ import type { Express } from 'express'
 import { Between, Equal, In, Like } from 'typeorm'
 import { AppDataSource } from '../data-source'
 import { Actress } from '../entity/actress'
-import { getActressImage } from '../../utils/common'
+import { fsCopyFile, getActressImage, getPublicPath } from '../../utils/common'
+import { join } from 'node:path'
 
 export function initActressApi(server: Express) {
   const repository = AppDataSource.getRepository(Actress)
@@ -146,6 +147,7 @@ export function initActressApi(server: Express) {
       console.log(req.url)
       req.body.updatedTime = Date.now()
       const result = await repository.update({ name: req.params.name }, req.body)
+      await fsCopyFile(join(getPublicPath(), req.body.avatar), join(getPublicPath(), 'actor', req.params.name, 'avatar.jpg'), true)
       res.status(200).json(result)
     } catch (error) {
       res.status(500).send(error)
