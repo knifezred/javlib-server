@@ -42,6 +42,14 @@ export function initMovieApi(server: Express) {
         whereStr = whereStr.substring(0, whereStr.length - 4)
         movies.andWhere(whereStr, whereParams)
       }
+
+      if (req.body.tag !== null && req.body.tag !== undefined && req.body.tag !== '') {
+        movies
+          .andWhere({
+            tags: Like(`%|${req.body.tag}|%`)
+          })
+      }
+
       if (req.body.keyword !== null && req.body.keyword !== undefined && req.body.keyword !== '') {
         movies
           .andWhere({

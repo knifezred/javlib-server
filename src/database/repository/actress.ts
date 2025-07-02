@@ -2,6 +2,7 @@ import type { Express } from 'express'
 import { Between, Equal, In, Like } from 'typeorm'
 import { AppDataSource } from '../data-source'
 import { Actress } from '../entity/actress'
+import { getActressImage } from '../../utils/common'
 
 export function initActressApi(server: Express) {
   const repository = AppDataSource.getRepository(Actress)
@@ -113,6 +114,16 @@ export function initActressApi(server: Express) {
       console.log(req.url)
       const result = await repository.findOneBy({ name: req.params.name })
       res.status(200).json(result)
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  })
+
+  server.get('/api/actress/image/:type/:name', async (req, res) => {
+    try {
+      console.log(req.url)
+      const image = await getActressImage(req.params.name, req.params.type)
+      res.status(200).json(image)
     } catch (error) {
       res.status(500).send(error)
     }

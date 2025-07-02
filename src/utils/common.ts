@@ -72,6 +72,27 @@ export async function getFolderCover(folder: string) {
   return imgList
 }
 
+export async function getActressImage(actress: string, type: string = 'banner') {
+  const actorPath = join(getAppPath(), 'public', 'actor', actress)
+  if (existsSync(actorPath)) {
+    const files = await promises.readdir(actorPath, {
+      encoding: 'utf-8',
+      recursive: false
+    })
+    if (files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        if (file.startsWith(type)) {
+          const filePath = join('actor', actress, file)
+          console.log(filePath)
+          return filePath
+        }
+      }
+    }
+  }
+  return ''
+}
+
 export async function readFile(path: string) {
   try {
     const fileData = await promises.readFile(path, 'utf8')
