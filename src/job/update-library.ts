@@ -388,15 +388,6 @@ function findVideoFile(files: string[], movieInfo: DbMovie) {
     )
     if (isVideoFile) {
       movieInfo.file += `${dirFile.replace('/app/public/', '/')}|`
-      if (dirFile.toUpperCase().includes('-C.') || dirFile.toUpperCase().includes('-UC.')) {
-        movieInfo.tags += '中文字幕|'
-      }
-      if (dirFile.toUpperCase().includes('-UC.') || dirFile.toUpperCase().includes('-U.')) {
-        movieInfo.tags += '无码破解|'
-      }
-      if (dirFile.toUpperCase().includes('-4K.')) {
-        movieInfo.tags += '4K|'
-      }
     }
     if (dirFile.endsWith('.torrent')) {
       const torrentPath = join(thumbnails, movieInfo.num, movieInfo.num + getFileExtension(dirFile))
@@ -449,6 +440,9 @@ function updateMovieInfo(line: string, isSet: boolean, isActor: boolean) {
   } else if (isActor && line.startsWith('<name>')) {
     result.key = 'actress'
     result.value = `|${getMatchContent(line, nameRegex)}`
+  }
+  if (result.value.startsWith('<![CDATA[')) {
+    result.value = result.value.replace('<![CDATA[', '').replace(']]>', '')
   }
   return result
 }
