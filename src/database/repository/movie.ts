@@ -1,5 +1,5 @@
 import type { Express } from 'express'
-import { Between, Equal, In, Like, MoreThanOrEqual } from 'typeorm'
+import { Between, Brackets, Equal, In, Like, MoreThanOrEqual } from 'typeorm'
 import { fsDeleteFile } from '../../utils/common'
 import { AppDataSource } from '../data-source'
 import { Movie } from '../entity/movie'
@@ -82,6 +82,11 @@ export function initMovieApi(server: Express) {
           series: Equal(req.body.series)
         })
       }
+      if (req.body.director !== undefined && req.body.director !== null && req.body.director !== '') {
+        movies.andWhere({
+          director: Equal(req.body.director)
+        })
+      }
       if (req.body.viewCount !== undefined && req.body.viewCount !== null && req.body.viewCount > -1) {
         if (req.body.viewCount == 0) {
           // 0 未播放
@@ -95,10 +100,51 @@ export function initMovieApi(server: Express) {
           })
         }
       }
+      if (req.body.all !== undefined && req.body.all !== null && req.body.all == true) {
+        // 不传或传false时查未删除，否则查全部
+      } else {
+        movies
+          .andWhere({
+            isDelete: Equal(false)
+          })
+      }
       const result = await movies
-        .andWhere({
-          isDelete: Equal(false)
-        })
+        .orderBy(
+          req.body.sortRule === 'RAND' ? 'RANDOM()' : `movie.${req.body.sort}`,
+          req.body.sortRule === 'RAND' ? 'ASC' : req.body.sortRule
+        )
+        .take(req.body.pageSize)
+        .skip((req.body.page - 1) * req.body.pageSize)
+        .getManyAndCount()
+      res.status(200).json({
+        records: result[0],
+        size: req.body.pageSize,
+        current: req.body.page,
+        total: result[1]
+      })
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  })
+
+  // 全局搜索
+  server.post('/api/movie/global/search', async (req, res) => {
+    console.log(req.url)
+    try {
+      const movies = repository.createQueryBuilder('movie')
+      if (req.body.keyword !== null && req.body.keyword !== undefined && req.body.keyword !== '') {
+        movies
+          .where({ isDelete: Equal(false) })
+          .andWhere(new Brackets(qb => {
+            qb.where({ title: Like(`%${req.body.keyword}%`) })
+              .orWhere({ actress: Like(`%|${req.body.keyword}|%`) })
+              .orWhere({ tags: Like(`%|${req.body.keyword}|%`) })
+              .orWhere({ studio: Like(`%${req.body.keyword}%`) })
+              .orWhere({ series: Like(`%${req.body.keyword}%`) })
+              .orWhere({ director: Like(`%${req.body.keyword}%`) })
+          }))
+      }
+      const result = await movies
         .orderBy(
           req.body.sortRule === 'RAND' ? 'RANDOM()' : `movie.${req.body.sort}`,
           req.body.sortRule === 'RAND' ? 'ASC' : req.body.sortRule
