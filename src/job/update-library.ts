@@ -441,7 +441,7 @@ function updateMovieInfo(line: string, isSet: boolean, isActor: boolean) {
     result.key = 'actress'
     result.value = `|${getMatchContent(line, nameRegex)}`
   }
-  if (result.value.startsWith('<![CDATA[')) {
+  if (result.value && typeof result.value === 'string' && result.value.startsWith('<![CDATA[')) {
     result.value = result.value.replace('<![CDATA[', '').replace(']]>', '')
   }
   return result

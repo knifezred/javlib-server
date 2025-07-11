@@ -35,6 +35,9 @@ export function initActressApi(server: Express) {
             .orWhere({
               alias: Like(`%${req.body.name}%`)
             })
+            .orWhere({
+              tags: Like(`%${req.body.name}%`)
+            })
         }
       }
       if (req.body.face !== undefined && req.body.face !== null) {

@@ -227,14 +227,30 @@ export function initMovieApi(server: Express) {
   server.post('/api/movie/all/series', async (req, res) => {
     console.log(req.url)
     try {
-      const movies = repository.createQueryBuilder('movie')
-      const result = await movies
-        .select('movie.series')
-        .where({
-          isDelete: Equal(false)
-        })
-        .groupBy('movie.series')
-        .getMany()
+      const query =`-- 获取所有系列
+                    WITH all_series AS (
+                      SELECT DISTINCT series
+                      FROM movie
+                      WHERE isDelete = 0 AND series IS NOT NULL AND series != ''
+                    )
+                    -- 为每个系列获取3个最新封面
+                    SELECT
+                      s.series,
+                      (
+                        SELECT GROUP_CONCAT(poster, '|')
+                        FROM (
+                          SELECT poster
+                          FROM movie
+                          WHERE series = s.series
+                            AND isDelete = 0
+                            AND poster IS NOT NULL
+                          ORDER BY createdTime DESC
+                          LIMIT 3
+                        )
+                      ) AS cover
+                    FROM all_series s`
+      const result = await repository.query(query)
+      console.log(result)
       res.status(200).json(result)
     } catch (error) {
       res.status(500).send(error)
