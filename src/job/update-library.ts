@@ -335,6 +335,9 @@ async function readNfoInfo(file: string, files: string[]) {
       }
     }
     movieInfo.year = Number.parseInt(movieInfo.releaseTime.substring(0, 4), 10)
+    if (isNaN(movieInfo.year)) {
+      movieInfo.year = 0
+    }
 
     if (movieInfo.uniqueid !== '') {
       if (movieInfo.num === '') {
