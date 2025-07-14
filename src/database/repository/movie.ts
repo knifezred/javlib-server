@@ -271,8 +271,6 @@ export function initMovieApi(server: Express) {
         .skip((req.body.page - 1) * req.body.pageSize)
 
       const [seriesList, total] = await seriesQuery.getManyAndCount()
-      console.log(total)
-      console.log(seriesList)
       // 为每个系列获取4个封面
       const result = await Promise.all(seriesList.map(async (series) => {
         const covers = await repository
