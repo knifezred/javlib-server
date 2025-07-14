@@ -1,5 +1,5 @@
 import type { Express } from 'express'
-import { Between, Brackets, Equal, In, Like, MoreThanOrEqual } from 'typeorm'
+import { Between, Brackets, Equal, In, IsNull, Like, MoreThanOrEqual, Not } from 'typeorm'
 import { fsDeleteFile } from '../../utils/common'
 import { AppDataSource } from '../data-source'
 import { Movie } from '../entity/movie'
@@ -227,7 +227,7 @@ export function initMovieApi(server: Express) {
   server.post('/api/movie/all/series', async (req, res) => {
     console.log(req.url)
     try {
-      const query =`-- 获取所有系列
+      const query = `-- 获取所有系列
                     WITH all_series AS (
                       SELECT DISTINCT series
                       FROM movie
@@ -252,6 +252,52 @@ export function initMovieApi(server: Express) {
       const result = await repository.query(query)
       console.log(result)
       res.status(200).json(result)
+    } catch (error) {
+      res.status(500).send(error)
+    }
+  })
+
+  server.post('/api/movie/series/list', async (req, res) => {
+    console.log(req.url)
+    try {
+      // 首先获取分页后的系列列表
+      const seriesQuery = repository.createQueryBuilder('movie')
+        .select('movie.series')
+        .where({ isDelete: Equal(false) })
+        .andWhere({ series: Not('') })
+        .andWhere({ series: Not(IsNull()) })
+        .groupBy('movie.series')
+        .take(req.body.pageSize)
+        .skip((req.body.page - 1) * req.body.pageSize)
+
+      const [seriesList, total] = await seriesQuery.getManyAndCount()
+      console.log(total)
+      console.log(seriesList)
+      // 为每个系列获取4个封面
+      const result = await Promise.all(seriesList.map(async (series) => {
+        const covers = await repository
+          .createQueryBuilder('movie')
+          .select('movie.poster')
+          .where({
+            series: series.series,
+            isDelete: Equal(false),
+            poster: Not(IsNull())
+          })
+          .orderBy('movie.createdTime', 'DESC')
+          .limit(4)
+          .getRawMany()
+
+        return {
+          series: series.series,
+          cover: covers.map(c => c.movie_poster).filter(c => c).join('|')
+        }
+      }))
+      res.status(200).json({
+        records: result,
+        size: req.body.pageSize,
+        current: req.body.page,
+        total
+      })
     } catch (error) {
       res.status(500).send(error)
     }
