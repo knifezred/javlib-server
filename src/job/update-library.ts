@@ -94,7 +94,7 @@ export async function updateMovieLibrary() {
         })
         const childrenMovies = chunkArray(addMovies as never[], 100)
         for (const child of childrenMovies) {
-          movieRepo.save(child as Array<Category>).then(saveResult => {
+          movieRepo.save(child as Array<Movie>).then(saveResult => {
             console.log(`batch save movies success : ${saveResult.length}`)
           })
         }
@@ -265,7 +265,7 @@ export async function updateMovieLibrary() {
             if (updateActressList.length > 0) {
               const childrenArray = chunkArray(updateActressList as never[], 100)
               for (const child of childrenArray) {
-                actressRepo.save(child as Array<Movie>).then(updateActressSaveResult => {
+                actressRepo.save(child as Array<Actress>).then(updateActressSaveResult => {
                   console.log(`batch update actress success : ${updateActressSaveResult.length}`)
                 })
               }

@@ -267,6 +267,7 @@ export function initMovieApi(server: Express) {
         .andWhere({ series: Not('') })
         .andWhere({ series: Not(IsNull()) })
         .groupBy('movie.series')
+        .having('COUNT(movie.series) > 1')
         .take(req.body.pageSize)
         .skip((req.body.page - 1) * req.body.pageSize)
 
